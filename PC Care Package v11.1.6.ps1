@@ -409,6 +409,15 @@ $appsToInstall = @(
 
 ## Iterate through apps and install
 foreach ($app in $appsToInstall) {
+    # Check for any in-progress MSI installs and wait up to 5 minutes to complete if found (mitigates .NET async installer issues)
+    try {
+        $m = [Threading.Mutex]::OpenExisting("Global\_MSIExecute")
+        $null = $m.WaitOne(300000)
+        try { $m.ReleaseMutex() } catch {}
+        $m.Dispose()
+    } catch [Threading.WaitHandleCannotBeOpenedException] {}
+
+    # Begin installation
     write-Host "***Installing $($app.Name)***" -ForegroundColor Green -BackgroundColor Black
 
     $installArgs = @(
@@ -425,6 +434,7 @@ foreach ($app in $appsToInstall) {
     }
 
     & winget $installArgs
+    Start-Sleep -Seconds 3
 }
 
 ############################
@@ -454,19 +464,3 @@ write-Host "            *******(Press any key to exit)*******            " -Fore
 $key = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 sysdm.cpl /,3
 Exit
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
