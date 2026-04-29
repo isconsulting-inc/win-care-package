@@ -138,6 +138,8 @@ function unloaddefaulthive {
         reg unload "$reglocation"
 }
 
+## Check manufacturer as reported by WMI and store as variable for script reference
+$manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
 
 #########################
 ## Begin Menu Sequence ##
@@ -407,7 +409,24 @@ $appsToInstall = @(
     @{ Id = "Piriform.Recuva"; Name = "Piriform Recuva" }
 )
 
-## Iterate through apps and install
+## Define apps to remove with ID, name, and version if applicable
+## Array functions the same as appsToInstall
+$appsToRemove = @(
+    @{ Id = "9NRX63209R7B"; Name = "New Outlook" }
+)
+
+## Manufacturer-specific installs/removals (Dell)
+if ($manufacturer -like "*Dell*" ) {
+    $appsToInstall += @{ Id = "Dell.CommandUpdate"; Name = "Dell Command Update" }
+    $appsToRemove += @{ Id = "9PPRLNT023WC"; Name = "Dell Digital Delivery" }
+    $appsToRemove += @{ Id = "XP9B49CJ91XF01"; Name = "Dell Optimizer" }
+}
+
+if ($manufacturer -like "*HP*" ) {
+    $appsToInstall += @{ Id = "HPInc.HPSupportAssistant"; Name = "HP Support Assistant" }
+}
+
+## Iterate through apps and install with winget
 foreach ($app in $appsToInstall) {
     # Check for any in-progress MSI installs and wait up to 5 minutes to complete if found (mitigates .NET async installer issues)
     try {
@@ -435,6 +454,24 @@ foreach ($app in $appsToInstall) {
 
     & winget $installArgs
     Start-Sleep -Seconds 3
+}
+
+## Iterate through apps and remove with winget
+foreach ($app in $appsToRemove) {
+    write-Host "***Removing $($app.Name)***" -ForegroundColor Green -BackgroundColor Black
+
+    $removeArgs = @(
+        "uninstall",
+        "--id", $app.Id,
+        "--silent"
+    )
+
+    # Add version parameter if specified
+    if ($app.Version) {
+        $removeArgs += "--version", $app.Version
+    }
+
+    & winget $removeArgs
 }
 
 ############################
