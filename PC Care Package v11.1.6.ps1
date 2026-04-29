@@ -420,7 +420,10 @@ if ($manufacturer -like "*Dell*" ) {
     $appsToInstall += @{ Id = "Dell.CommandUpdate"; Name = "Dell Command Update" }
     $appsToRemove += @{ Id = "9PPRLNT023WC"; Name = "Dell Digital Delivery" }
     $appsToRemove += @{ Id = "XP9B49CJ91XF01"; Name = "Dell Optimizer" }
-    $appsToRemove += @{ Id = "Dell.SupportAssist"; Name = "Dell SupportAssist" } # May not actually exist
+}
+
+if ($manufacturer -like "*HP*" ) {
+    $appsToInstall += @{ Id = "HPInc.HPSupportAssistant"; Name = "HP Support Assistant" }
 }
 
 ## Iterate through apps and install with winget
@@ -488,19 +491,3 @@ write-Host "            *******(Press any key to exit)*******            " -Fore
 $key = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 sysdm.cpl /,3
 Exit
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
