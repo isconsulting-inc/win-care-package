@@ -292,11 +292,14 @@ write-Host "***Setting up the advertising dumpster***" -ForegroundColor Green -B
 
 ## Removes most "junk apps" and prevents all from being installed on new profiles (exclusions listed)
 write-Host "***Taking out the trash***" -ForegroundColor Green -BackgroundColor Black
+
+$junkApps = "clipchamp|bingnews|bingweather|bingsearch|gamingapp|microsoftofficehub|solitairecollection|outlookforwindows|powerautomatedesktop|screensketch|microsoft.todos|xbox|yourphone|zune|msteams|whatsapp|linkedin|facebook|instagram|tiktok|spotify|kindle"
+
     Get-AppxPackage -AllUsers | where-object {
-	    $_.Name -notmatch "ShellExperienceHost|CloudExperienceHost|Search|StartMenuExperienceHost|VCLibs|AppResolverUX|AAD.BrokerPlugin|NET.Native|AccountsControl|CredDialogHost|PrintDialog|CallingShellApp|FilePicker|Apprep.ChxApp|NarratorQuick-Start|XGpuEjectDialog|Store|Dell|HP|Notepad|Terminal|heic|hevc|webp|Camera|Calculator|Photos|SoundRecorder|Paint|Calendar|Winget|QuickAssist|VP9|windowscommunicationsapps"
+	    $_.Name -imatch $junkApps
     } | Remove-AppxPackage -erroraction silentlycontinue
     Get-AppxProvisionedPackage -online | where-object {
-	    $_.PackageName -notmatch "ShellExperienceHost|CloudExperienceHost|Search|StartMenuExperienceHost|VCLibs|AppResolverUX|AAD.BrokerPlugin|NET.Native|AccountsControl|CredDialogHost|PrintDialog|CallingShellApp|FilePicker|Apprep.ChxApp|NarratorQuick-Start|XGpuEjectDialog|Store|Dell|HP|Notepad|Terminal|HEIF|heic|hevc|webp|Camera|Calculator|Photos|SoundRecorder|Paint|Calendar|Winget|QuickAssist|VP9|windowscommunicationsapps"
+	    $_.PackageName -imatch $junkApps
 	} | Remove-AppxProvisionedPackage -online -erroraction silentlycontinue
 
 write-Host "***Disabling 'Featured Software'***" -ForegroundColor Green -BackgroundColor Black
