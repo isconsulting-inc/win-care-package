@@ -6,7 +6,7 @@ This script is intended to automate a large portion of the Windows 11 setup proc
 
 > [!Caution]  
 > **Use with caution**  
-> This script is tested and working as of 2025-08-11 with no breaking changes to the latest version of Windows 11 but holds no guarantee that will remain the case with future updates.
+> This script is tested and working as of 2026-07-22 with no breaking changes to the latest version of Windows 11 but holds no guarantee that will remain the case with future updates.
 >   
 > This is not intended for in-use systems and is focused solely for new setups where data loss and reloading is of minimal consequence.  
 
