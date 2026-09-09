@@ -141,20 +141,6 @@ function unloaddefaulthive {
 ## Check manufacturer as reported by WMI and store as variable for script reference
 $manufacturer = (Get-CimInstance -ClassName Win32_ComputerSystem).Manufacturer
 
-#########################
-## Begin Menu Sequence ##
-#########################
-
-## Reserved space for setting environment variables via menu sequence.
-##
-## Menu Usage Example: 
-## $activatemenu = "No","Yes"
-## $activate = Menu $activatemenu "Activate Windows?" -ForegroundColor Cyan -BackgroundColor Black -NoNewline
-##
-## if ($activate -match "Yes") {
-##    Do This
-## }
-
 
 #########################
 ## Management Settings ##
@@ -206,7 +192,7 @@ while ($Password -notlike $Password2) {
     cls
 }
 
-## Creates local ISCAdmin and sets password to never expire
+## Creates local admin and sets password to never expire
 $group = "Administrators"
 $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
 $existing = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $Username }
@@ -228,6 +214,35 @@ write-Host "***Setting password for $Username to never expire***" -ForegroundCol
 ## Sets PC to not auto-reboot on crash
 write-Host "***Setting policy for no auto-reboot on BSOD***" -ForegroundColor Green -BackgroundColor Black
 	reg add "HKLM\SYSTEM\CurrentControlSet\Control\CrashControl" /t REG_DWORD /v AutoReboot /d 0 /f
+
+
+#########################
+## Begin Menu Sequence ##
+#########################
+
+## Reserved space for setting environment variables via menu sequence.
+##
+## Menu Usage Example: 
+## $activatemenu = "No","Yes"
+## $activate = Menu $activatemenu "Activate Windows?" -ForegroundColor Cyan -BackgroundColor Black -NoNewline
+##
+## if ($activate -match "Yes") {
+##    Do This
+## }
+
+## RDP Enablement
+$rdpEnableMenu = "No","Yes"
+$rdpEnable = Menu $rdpEnableMenu "Enable RDP?" -ForegroundColor Cyan -BackgroundColor Black -NoNewline
+
+if ($rdpEnable -match "Yes") {
+    write-Host "***Enabling RDP***" -ForegroundColor Green -BackgroundColor Black
+    set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+    Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+    set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1 
+}
+else {
+    write-Host "***RDP will remain disabled***" -ForegroundColor Green -BackgroundColor Black
+}
 
 
 #######################
@@ -332,11 +347,6 @@ write-Host "***Setting registry for current and default user, and policies for l
 
 write-Host "***Disabling Diagnostics Tracking Services, Xbox Services, Distributed Link Tracking, and WMP Network Sharing***" -ForegroundColor Green -BackgroundColor Black
     Get-Service Diagtrack,DmwApPushService,XblAuthManager,XblGameSave,XboxNetApiSvc,WMPNetworkSvc | stop-service -passthru | set-service -startuptype disabled
-
-write-Host "***Enabling RDP Access***" -ForegroundColor Green -BackgroundColor Black
-    set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
-    Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-    set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1 
 
 write-Host "***Setting Time Zone to EST***" -ForegroundColor Green -BackgroundColor Black
     tzutil.exe /s "Eastern Standard Time"
